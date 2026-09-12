@@ -1,0 +1,48 @@
+{% extends 'jogo/base.html' %}
+{% load static %} <!-- IMPORTANTE: Necessário para carregar imagens -->
+
+{% block content %}
+    <div style="text-align: center;">
+        <!-- LOGOTIPO -->
+        <img src="{% static 'jogo/logo.png' %}" alt="Logo Jokenpô" style="max-width: 250px; margin-bottom: 10px;">
+        
+        <p>Faça login para entrar na disputa</p>
+    </div>
+
+    <!-- FORMULÁRIO DE LOGIN -->
+    <div style="max-width: 400px; margin: 0 auto; background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" style="width:100%; padding:10px; background:#007bff; color:white; border:none; border-radius:5px; cursor: pointer; font-size: 16px;">
+                Entrar no Jogo
+            </button>
+        </form>
+        <p style="text-align:center; margin-top:15px;">Não tem uma conta? <a href="{% url 'registrar' %}">Cadastre-se</a></p>
+    </div>
+
+    <hr style="margin: 30px 0;">
+
+    <!-- RANKING GERAL (TOP VENCEDORES) -->
+    <div style="max-width: 400px; margin: 0 auto;">
+        <h3 style="text-align: center; color: #333;">🏆 Top Vencedores 🏆</h3>
+        
+        {% if ranking %}
+            <ul style="list-style-type: none; padding: 0;">
+                {% for jogador in ranking %}
+                    <li style="background: #fff; border: 1px solid #ccc; padding: 10px 15px; margin-bottom: 8px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center;">
+                        <b style="font-size: 16px;">
+                            {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}🏅{% endif %}
+                            {{ jogador.nome }}
+                        </b>
+                        <span style="color: #28a745; font-weight: bold;">
+                            {{ jogador.vitorias }} Vitória{% if jogador.vitorias > 1 %}s{% endif %}
+                        </span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="text-align: center; color: #666;">O ranking está vazio. Seja o primeiro a vencer uma partida!</p>
+        {% endif %}
+    </div>
+{% endblock %}

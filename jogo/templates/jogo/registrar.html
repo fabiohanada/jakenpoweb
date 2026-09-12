@@ -1,0 +1,12 @@
+{% extends 'jogo/base.html' %}
+{% block content %}
+    <div style="text-align: center;">
+        <h2>🎮 CRIAR CONTA</h2>
+    </div>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" style="width:100%; padding:10px; background:#28a745; color:white; border:none; border-radius:5px;">Cadastrar</button>
+    </form>
+    <p style="text-align:center; margin-top:15px;">Já tem conta? <a href="{% url 'login' %}">Faça login</a></p>
+{% endblock %}

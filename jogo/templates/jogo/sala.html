@@ -1,0 +1,97 @@
+{% extends 'jogo/base.html' %}
+{% block content %}
+    <div style="text-align: center;">
+        <h2>Sala #{{ sala.id }}</h2>
+        <p><b>{{ sala.jogador1.username }}</b> vs <b>{% if sala.jogador2 %}{{ sala.jogador2.username }}{% else %}Aguardando oponente...{% endif %}</b></p>
+        <hr>
+
+        {% if sala.status == 'aguardando_oponente' %}
+            <p>⏳ Aguardando um segundo jogador entrar na sala...</p>
+            
+            <!-- NOVO BOTÃO DE SAIR (Abandonar a sala antes de alguém entrar) -->
+            <form action="{% url 'sair_sala' sala.id %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" style="padding: 8px 15px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">
+                    🚪 Abandonar Sala
+                </button>
+            </form>
+            
+            <!-- Atualiza a página a cada 3 segundos esperando alguém entrar -->
+            <script>setTimeout(function(){ window.location.reload(); }, 3000);</script>
+
+        {% elif sala.status == 'em_andamento' %}
+            
+            <!-- Verifica se o usuário logado JÁ FEZ a sua jogada -->
+            {% if request.user == sala.jogador1 and sala.escolha_j1 or request.user == sala.jogador2 and sala.escolha_j2 %}
+                <p>✅ A sua escolha foi registrada!</p>
+                <p>⏳ Aguardando a jogada do seu oponente...</p>
+                
+                <!-- NOVO BOTÃO DE SAIR (Caso o oponente não jogue e você não queira ficar preso) -->
+                <form action="{% url 'sair_sala' sala.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" style="padding: 8px 15px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">
+                        🚪 Abandonar Sala
+                    </button>
+                </form>
+
+                <!-- Atualiza a página a cada 2 segundos esperando o oponente jogar -->
+                <script>setTimeout(function(){ window.location.reload(); }, 2000);</script>
+            
+            {% else %}
+                <!-- Se ainda não jogou, mostra os botões -->
+                <p>Faça a sua escolha em segredo:</p>
+                <form action="{% url 'fazer_jogada' sala.id %}" method="POST">
+                    {% csrf_token %}
+                    <button name="escolha" value="pedra" style="padding:15px; font-size:16px; margin:5px; cursor:pointer;">🪨 Pedra</button>
+                    <button name="escolha" value="papel" style="padding:15px; font-size:16px; margin:5px; cursor:pointer;">📄 Papel</button>
+                    <button name="escolha" value="tesoura" style="padding:15px; font-size:16px; margin:5px; cursor:pointer;">✂️ Tesoura</button>
+                </form>
+            {% endif %}
+
+        {% elif sala.status == 'finalizado' %}
+            <h3>FIM DA RODADA!</h3>
+            <div style="display: flex; justify-content: center; gap: 20px; margin: 20px 0;">
+                <div style="border: 1px solid #ccc; padding: 15px; border-radius: 8px;">
+                    <p><b>{{ sala.jogador1.username }}</b></p>
+                    <p style="font-size: 24px;">
+                        {% if sala.escolha_j1 == 'pedra' %}🪨 Pedra{% elif sala.escolha_j1 == 'papel' %}📄 Papel{% else %}✂️ Tesoura{% endif %}
+                    </p>
+                </div>
+                <div style="border: 1px solid #ccc; padding: 15px; border-radius: 8px;">
+                    <p><b>{{ sala.jogador2.username }}</b></p>
+                    <p style="font-size: 24px;">
+                        {% if sala.escolha_j2 == 'pedra' %}🪨 Pedra{% elif sala.escolha_j2 == 'papel' %}📄 Papel{% else %}✂️ Tesoura{% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <h2>
+                {% if sala.resultado == 'empate' %}
+                    🤝 EMPATE!
+                {% elif sala.resultado == 'vitoria_j1' and request.user == sala.jogador1 or sala.resultado == 'vitoria_j2' and request.user == sala.jogador2 %}
+                    🎉 VOCÊ VENCEU! 🎉
+                {% else %}
+                    😢 VOCÊ PERDEU! 😢
+                {% endif %}
+            </h2>
+
+            <br>
+            <div style="display: flex; justify-content: center; gap: 10px;">
+                <!-- BOTÃO JOGAR NOVAMENTE (Reinicia a mesma sala) -->
+                <form action="{% url 'jogar_novamente' sala.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        🔄 Jogar Novamente
+                    </button>
+                </form>
+                
+                <!-- BOTÃO SAIR DA SALA -->
+                <a href="{% url 'home' %}" style="padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;">Sair da Sala</a>
+            </div>
+
+            <!-- Atualiza a página a cada 3 segundos caso o OUTRO jogador clique em "Jogar Novamente" -->
+            <script>setTimeout(function(){ window.location.reload(); }, 3000);</script>
+
+        {% endif %}
+    </div>
+{% endblock %}
