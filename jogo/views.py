@@ -17,8 +17,8 @@ def home(request):
     
     # 2. Busca todas as partidas finalizadas onde o usuário participou
     partidas_finalizadas = Sala.objects.filter(
-        (Q(jogador1=usuario) | Q(jogador2=usuario)) & Q(status='finalizado')
-    ).order_by('-criado_em') # Ordena da mais recente para a mais antiga
+        (Q(jogador1=usuario) | Q(jogador2=usuario)) & Q(status__in=['finalizado', 'historico'])
+    ).order_by('-criado_em')
 
     # 3. Calcula as estatísticas
     vitorias = 0
@@ -177,12 +177,16 @@ def jogar_novamente(request, sala_id):
 def sair_sala(request, sala_id):
     try:
         sala = Sala.objects.get(id=sala_id)
-        # REGRA DEFINITIVA: Se qualquer um dos jogadores sair, a sala é APAGADA.
-        # Isso garante que a sala não vira fantasma e o outro jogador será expulso.
         if request.user == sala.jogador1 or request.user == sala.jogador2:
-            sala.delete()
+            if sala.status == 'finalizado':
+                # O jogo acabou! Em vez de apagar, guardamos no histórico.
+                sala.status = 'historico'
+                sala.save()
+            else:
+                # Se alguém fugir no meio da partida, aí sim apagamos a sala.
+                sala.delete()
     except Sala.DoesNotExist:
-        pass # Se a sala já foi apagada pelo outro jogador, não faz nada
+        pass
         
     return redirect('home')
 
@@ -190,10 +194,13 @@ def sair_sala(request, sala_id):
 def status_sala_api(request, sala_id):
     try:
         sala = Sala.objects.get(id=sala_id)
+        # Se a sala virou histórico, dizemos ao JavaScript que ela foi encerrada
+        if sala.status == 'historico':
+            return JsonResponse({'apagada': True})
+            
         return JsonResponse({
             'status': sala.status,
             'apagada': False
         })
     except Sala.DoesNotExist:
-        # Se a sala não existe mais (o criador apagou/saiu)
         return JsonResponse({'apagada': True})
