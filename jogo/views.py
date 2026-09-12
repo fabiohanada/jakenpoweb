@@ -90,13 +90,13 @@ def entrar(request):
 @login_required
 def criar_sala(request):
     if request.method == 'POST':
-        # Opcional, mas recomendado: Apaga outras salas vazias que esse usuário criou e abandonou
+        # Apaga outras salas vazias que esse usuário criou e abandonou
         Sala.objects.filter(jogador1=request.user, status='aguardando_oponente').delete()
         
         # Cria a nova sala
         sala = Sala.objects.create(jogador1=request.user)
         
-        # Redireciona o usuário DIRETO para a sala que ele acabou de criar, e não para a Home
+        # Redireciona o usuário direto para a sala que ele acabou de criar
         return redirect('entrar_sala', sala_id=sala.id) 
     return render(request, 'jogo/criar_sala.html')
 
@@ -104,6 +104,14 @@ def criar_sala(request):
 def entrar_sala(request, sala_id):
     sala = get_object_or_404(Sala, id=sala_id)
     
+    # SEGURANÇA: Se a sala estava em andamento ou finalizada, mas o jogador2 sumiu/saiu
+    if sala.status in ['em_andamento', 'finalizado'] and not sala.jogador2:
+        sala.status = 'aguardando_oponente'
+        sala.escolha_j1 = None
+        sala.escolha_j2 = None
+        sala.resultado = None
+        sala.save()
+
     # Se a sala está aguardando e o usuário não é o criador, ele entra como jogador 2
     if sala.status == 'aguardando_oponente' and not sala.jogador2 and sala.jogador1 != request.user:
         sala.jogador2 = request.user
@@ -166,13 +174,14 @@ def sair_sala(request, sala_id):
     sala = get_object_or_404(Sala, id=sala_id)
     
     if request.user == sala.jogador1:
-        # Se o criador sair da sala antes do jogo acabar, a sala é apagada
+        # Se o criador sair da sala, a sala é apagada por completo
         sala.delete()
     elif request.user == sala.jogador2:
-        # Se o jogador 2 sair, a sala é resetada para que outro possa entrar
+        # Se o jogador 2 sair, a sala liberta a vaga e volta a ficar disponível para outro
         sala.jogador2 = None
         sala.escolha_j1 = None
         sala.escolha_j2 = None
+        sala.resultado = None
         sala.status = 'aguardando_oponente'
         sala.save()
         
