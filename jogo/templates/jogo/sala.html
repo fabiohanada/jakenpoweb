@@ -8,37 +8,26 @@
         {% if sala.status == 'aguardando_oponente' %}
             <p>⏳ Aguardando um segundo jogador entrar na sala...</p>
             
-            <!-- NOVO BOTÃO DE SAIR (Abandonar a sala antes de alguém entrar) -->
             <form action="{% url 'sair_sala' sala.id %}" method="POST">
                 {% csrf_token %}
                 <button type="submit" style="padding: 8px 15px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">
                     🚪 Abandonar Sala
                 </button>
             </form>
-            
-            <!-- Atualiza a página a cada 3 segundos esperando alguém entrar -->
-            <script>setTimeout(function(){ window.location.reload(); }, 3000);</script>
 
         {% elif sala.status == 'em_andamento' %}
             
-            <!-- Verifica se o usuário logado JÁ FEZ a sua jogada -->
             {% if request.user == sala.jogador1 and sala.escolha_j1 or request.user == sala.jogador2 and sala.escolha_j2 %}
                 <p>✅ A sua escolha foi registrada!</p>
                 <p>⏳ Aguardando a jogada do seu oponente...</p>
                 
-                <!-- NOVO BOTÃO DE SAIR (Caso o oponente não jogue e você não queira ficar preso) -->
                 <form action="{% url 'sair_sala' sala.id %}" method="POST">
                     {% csrf_token %}
                     <button type="submit" style="padding: 8px 15px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">
                         🚪 Abandonar Sala
                     </button>
                 </form>
-
-                <!-- Atualiza a página a cada 2 segundos esperando o oponente jogar -->
-                <script>setTimeout(function(){ window.location.reload(); }, 2000);</script>
-            
             {% else %}
-                <!-- Se ainda não jogou, mostra os botões -->
                 <p>Faça a sua escolha em segredo:</p>
                 <form action="{% url 'fazer_jogada' sala.id %}" method="POST">
                     {% csrf_token %}
@@ -77,7 +66,6 @@
 
             <br>
             <div style="display: flex; justify-content: center; gap: 10px;">
-                <!-- BOTÃO JOGAR NOVAMENTE (Reinicia a mesma sala) -->
                 <form action="{% url 'jogar_novamente' sala.id %}" method="POST">
                     {% csrf_token %}
                     <button type="submit" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
@@ -85,13 +73,48 @@
                     </button>
                 </form>
                 
-                <!-- BOTÃO SAIR DA SALA -->
-                <a href="{% url 'home' %}" style="padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;">Sair da Sala</a>
+                <form action="{% url 'sair_sala' sala.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        🚪 Sair da Sala
+                    </button>
+                </form>
             </div>
-
-            <!-- Atualiza a página a cada 3 segundos caso o OUTRO jogador clique em "Jogar Novamente" -->
-            <script>setTimeout(function(){ window.location.reload(); }, 3000);</script>
-
         {% endif %}
+
+        <!-- SCRIPT INTELIGENTE DE CONTROLE DA SALA -->
+        <script>
+            const salaId = "{{ sala.id }}";
+            const statusAtualTela = "{{ sala.status }}";
+
+            setInterval(() => {
+                fetch(`/sala/${salaId}/api/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // 1. REGRA PRINCIPAL: Se a sala foi apagada (um dos jogadores clicou em Sair)
+                        if (data.apagada) {
+                            alert("A partida foi encerrada porque um jogador saiu da sala.");
+                            window.location.href = "{% url 'home' %}";
+                            return;
+                        }
+
+                        // 2. Alguém ENTROU na sala
+                        if (statusAtualTela === 'aguardando_oponente' && data.status === 'em_andamento') {
+                            window.location.reload(); 
+                        }
+
+                        // 3. Ambos jogaram e a rodada ACABOU
+                        if (statusAtualTela === 'em_andamento' && data.status === 'finalizado') {
+                            window.location.reload();
+                        }
+
+                        // 4. Um dos jogadores clicou em JOGAR NOVAMENTE
+                        if (statusAtualTela === 'finalizado' && data.status === 'em_andamento') {
+                            window.location.reload(); 
+                        }
+                    })
+                    .catch(error => console.error('Erro de conexão:', error));
+            }, 2000); // Checa a cada 2 segundos
+        </script>
     </div>
 {% endblock %}

@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from .models import Sala
 from .forms import RegistroForm
+from django.http import JsonResponse
 
 @login_required(login_url='/login/')
 def home(request):
@@ -171,18 +172,25 @@ def jogar_novamente(request, sala_id):
 
 @login_required
 def sair_sala(request, sala_id):
-    sala = get_object_or_404(Sala, id=sala_id)
-    
-    if request.user == sala.jogador1:
-        # Se o criador sair da sala, a sala é apagada por completo
-        sala.delete()
-    elif request.user == sala.jogador2:
-        # Se o jogador 2 sair, a sala liberta a vaga e volta a ficar disponível para outro
-        sala.jogador2 = None
-        sala.escolha_j1 = None
-        sala.escolha_j2 = None
-        sala.resultado = None
-        sala.status = 'aguardando_oponente'
-        sala.save()
+    try:
+        sala = Sala.objects.get(id=sala_id)
+        # REGRA DEFINITIVA: Se qualquer um dos jogadores sair, a sala é APAGADA.
+        # Isso garante que a sala não vira fantasma e o outro jogador será expulso.
+        if request.user == sala.jogador1 or request.user == sala.jogador2:
+            sala.delete()
+    except Sala.DoesNotExist:
+        pass # Se a sala já foi apagada pelo outro jogador, não faz nada
         
     return redirect('home')
+
+@login_required
+def status_sala_api(request, sala_id):
+    try:
+        sala = Sala.objects.get(id=sala_id)
+        return JsonResponse({
+            'status': sala.status,
+            'apagada': False
+        })
+    except Sala.DoesNotExist:
+        # Se a sala não existe mais (o criador apagou/saiu)
+        return JsonResponse({'apagada': True})
