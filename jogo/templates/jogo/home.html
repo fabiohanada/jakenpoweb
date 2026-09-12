@@ -56,18 +56,32 @@
         <h4>Últimas Partidas:</h4>
         <ul style="font-size: 15px; color: #333; list-style-type: none; padding: 0;">
             {% for partida in historico %}
-                <li style="padding: 8px 0; border-bottom: 1px dashed #ccc;">
+                <p style="border-bottom: 1px dashed #ccc; padding-bottom: 5px;">
+                    <!-- LÓGICA DO JOGADOR 1 -->
                     <b>{{ partida.jogador1.username }}</b> 
-                    {% if partida.resultado == 'vitoria_j1' %} <span style="color: #28a745;">(🏆 Venceu)</span> {% endif %}
+                    {% if partida.resultado == 'vitoria_j1' %}
+                        <span style="color: #28a745;">(🏆 Venceu)</span>
+                    {% elif partida.resultado == 'vitoria_j2' %}
+                        <span style="color: #dc3545;">(❌ Perdeu)</span>
+                    {% elif partida.resultado == 'empate' %}
+                        <span style="color: #6c757d;">(🤝 Empate)</span>
+                    {% endif %}
                     
-                    <i>vs</i> 
+                    <i> vs </i> 
                     
+                    <!-- LÓGICA DO JOGADOR 2 -->
                     <b>{{ partida.jogador2.username }}</b>
-                    {% if partida.resultado == 'vitoria_j2' %} <span style="color: #28a745;">(🏆 Venceu)</span> {% endif %}
-                    
-                    {% if partida.resultado == 'empate' %} <span style="color: #6c757d;">(🤝 Empate)</span> {% endif %}
-                </li>
-            {% endfor %}
+                    {% if partida.resultado == 'vitoria_j2' %}
+                        <span style="color: #28a745;">(🏆 Venceu)</span>
+                    {% elif partida.resultado == 'vitoria_j1' %}
+                        <span style="color: #dc3545;">(❌ Perdeu)</span>
+                    {% elif partida.resultado == 'empate' %}
+                        <span style="color: #6c757d;">(🤝 Empate)</span>
+                    {% endif %}
+                </p>
+{% empty %}
+    <p>Nenhuma partida finalizada ainda.</p>
+{% endfor %}
         </ul>
     {% endif %}
 

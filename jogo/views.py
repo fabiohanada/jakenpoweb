@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -59,6 +59,9 @@ def registrar(request):
     return render(request, 'jogo/registrar.html', {'form': form})
 
 def entrar(request):
+    if request.method == 'GET':
+        logout(request)
+        
     # Lógica de Login
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
