@@ -13,4 +13,5 @@ urlpatterns = [
     path('login/', views.entrar, name='login'),
     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
     path('sala/<int:sala_id>/api/', views.status_sala_api, name='status_sala_api'),
+    path('criar-sala-computador/', views.criar_sala_computador, name='criar_sala_computador'),
 ]

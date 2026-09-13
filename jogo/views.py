@@ -7,6 +7,7 @@ from django.db.models import Q
 from .models import Sala
 from .forms import RegistroForm
 from django.http import JsonResponse
+import random
 
 @login_required(login_url='/login/')
 def home(request):
@@ -160,17 +161,20 @@ def fazer_jogada(request, sala_id):
 def jogar_novamente(request, sala_id):
     sala = get_object_or_404(Sala, id=sala_id)
     
-    # Verifica se quem está clicando é um dos jogadores da sala
     if request.user == sala.jogador1 or request.user == sala.jogador2:
-        # Se a sala já acabou, limpamos os dados para uma nova rodada
         if sala.status == 'finalizado':
             sala.escolha_j1 = None
-            sala.escolha_j2 = None
+            
+            # Se o oponente for o Computador, ele já faz a nova jogada instantaneamente!
+            if sala.jogador2 and sala.jogador2.username == 'Computador':
+                sala.escolha_j2 = random.choice(['pedra', 'papel', 'tesoura'])
+            else:
+                sala.escolha_j2 = None
+                
             sala.resultado = None
             sala.status = 'em_andamento'
             sala.save()
             
-    # Redireciona de volta para a mesma sala
     return redirect('entrar_sala', sala_id=sala.id)
 
 @login_required
@@ -204,3 +208,23 @@ def status_sala_api(request, sala_id):
         })
     except Sala.DoesNotExist:
         return JsonResponse({'apagada': True})
+
+@login_required
+def criar_sala_computador(request):
+    if request.method == 'POST':
+        # Limpa salas vazias abandonadas pelo usuário
+        Sala.objects.filter(jogador1=request.user, status='aguardando_oponente').delete()
+        
+        # O Django procura o usuário "Computador". Se não existir, ele cria na hora!
+        bot, created = User.objects.get_or_create(username='Computador')
+        
+        # Cria a sala, coloca o bot como jogador2 e já sorteia a jogada dele
+        sala = Sala.objects.create(
+            jogador1=request.user,
+            jogador2=bot,
+            status='em_andamento',
+            escolha_j2=random.choice(['pedra', 'papel', 'tesoura'])
+        )
+        
+        return redirect('entrar_sala', sala_id=sala.id)
+    return redirect('home')

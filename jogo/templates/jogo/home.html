@@ -1,62 +1,62 @@
 {% extends 'jogo/base.html' %}
-
 {% block content %}
-    <script>
-        // Atualiza a página a cada 5 segundos para buscar novas salas
-        setTimeout(function(){
-            window.location.reload();
-        }, 5000);
-    </script>
+    <div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Bem-vindo, {{ request.user.username }}!</h2>
+            <a href="/login/" style="font-size: 14px;">[ Sair da Conta ]</a>
+        </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>Bem-vindo, {{ user.username }}!</h2>
-        
-        <form action="{% url 'logout' %}" method="post" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" style="background:none; border:none; color:blue; text-decoration:underline; cursor:pointer;">[ Sair da Conta ]</button>
-        </form>
-    </div>
-    
-    <!-- PAINEL DE ESTATÍSTICAS -->
-    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
-        <h3 style="margin-top: 0;">🏆 Meu Desempenho</h3>
-        <p style="font-size: 18px;">
-            <span style="color: #28a745; font-weight: bold;">Vitórias: {{ vitorias }}</span> | 
-            <span style="color: #dc3545; font-weight: bold;">Derrotas: {{ derrotas }}</span> | 
-            <span style="color: #6c757d; font-weight: bold;">Empates: {{ empates }}</span>
-        </p>
-    </div>
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #ddd;">
+            <h3 style="margin-top: 0;">🧍 Meu Desempenho</h3>
+            <p style="font-size: 16px; margin-bottom: 0;">
+                <strong style="color: #28a745;">Vitórias: {{ vitorias }}</strong> | 
+                <strong style="color: #dc3545;">Derrotas: {{ derrotas }}</strong> | 
+                <strong style="color: #6c757d;">Empates: {{ empates }}</strong>
+            </p>
+        </div>
 
-    <hr>
-    
-    <!-- SALAS DISPONÍVEIS -->
-    <h3>Salas Disponíveis para Jogar:</h3>
-    {% if salas %}
-        <ul>
-            {% for sala in salas %}
-                <li>Sala #{{ sala.id }} (Criada por: {{ sala.jogador1.username }}) 
-                    <a href="{% url 'entrar_sala' sala.id %}"><b>[ Entrar ]</b></a>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>Nenhuma sala aberta no momento. Crie uma abaixo!</p>
-    {% endif %}
-
-    <form action="{% url 'criar_sala' %}" method="POST" style="margin-bottom: 30px;">
-        {% csrf_token %}
-        <button type="submit" style="padding: 10px 15px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
-            Criar Nova Sala
-        </button>
-    </form>
-    
-    <!-- HISTÓRICO DE PARTIDAS RECENTES -->
-    {% if historico %}
         <hr>
-        <h4>Últimas Partidas:</h4>
-        <ul style="font-size: 15px; color: #333; list-style-type: none; padding: 0;">
+
+        <h3>Salas Disponíveis para Jogar:</h3>
+        
+        {% if not salas %}
+            <p>Nenhuma sala aberta no momento. Crie uma abaixo!</p>
+        {% else %}
+            <ul style="list-style-type: none; padding: 0;">
+                {% for sala in salas %}
+                    <li style="margin-bottom: 10px;">
+                        • Sala #{{ sala.id }} (Criada por: <b>{{ sala.jogador1.username }}</b>) 
+                        <a href="{% url 'entrar_sala' sala.id %}"><b>[ Entrar ]</b></a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <!-- BOTÕES ALINHADOS PARA CRIAR SALAS -->
+        <div style="display: flex; gap: 15px; align-items: center; margin: 20px 0;">
+            <!-- BOTÃO VERDE (Sala Normal contra Humanos) -->
+            <form action="{% url 'criar_sala' %}" method="POST" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                    Criar Nova Sala
+                </button>
+            </form>
+
+            <!-- BOTÃO CINZA (Jogar contra o Computador) -->
+            <form action="{% url 'criar_sala_computador' %}" method="POST" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                    🤖 Jogar contra o Computador
+                </button>
+            </form>
+        </div>
+
+        <hr>
+
+        <h3>Últimas Partidas:</h3>
+        <div style="margin-top: 15px;">
             {% for partida in historico %}
-                <p style="border-bottom: 1px dashed #ccc; padding-bottom: 5px;">
+                <p style="border-bottom: 1px dashed #ccc; padding-bottom: 10px; margin-bottom: 10px;">
                     <!-- LÓGICA DO JOGADOR 1 -->
                     <b>{{ partida.jogador1.username }}</b> 
                     {% if partida.resultado == 'vitoria_j1' %}
@@ -79,10 +79,14 @@
                         <span style="color: #6c757d;">(🤝 Empate)</span>
                     {% endif %}
                 </p>
-{% empty %}
-    <p>Nenhuma partida finalizada ainda.</p>
-{% endfor %}
-        </ul>
-    {% endif %}
-
+            {% empty %}
+                <p>Nenhuma partida finalizada ainda.</p>
+            {% endfor %}
+        </div>
+        <script>
+            setTimeout(function(){ 
+                window.location.reload(); 
+            }, 3000);
+        </script>
+    </div>
 {% endblock %}
