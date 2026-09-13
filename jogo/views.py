@@ -163,18 +163,28 @@ def jogar_novamente(request, sala_id):
     
     if request.user == sala.jogador1 or request.user == sala.jogador2:
         if sala.status == 'finalizado':
-            sala.escolha_j1 = None
-            
-            # Se o oponente for o Computador, ele já faz a nova jogada instantaneamente!
+            # Se o oponente for o Computador, arquivamos a partida atual como histórico 
+            # para preservar o empate/vitória/derrota, e criamos uma nova sala para a revanche!
             if sala.jogador2 and sala.jogador2.username == 'Computador':
-                sala.escolha_j2 = random.choice(['pedra', 'papel', 'tesoura'])
-            else:
-                sala.escolha_j2 = None
+                sala.status = 'historico'
+                sala.save()
                 
-            sala.resultado = None
-            sala.status = 'em_andamento'
-            sala.save()
-            
+                bot = sala.jogador2
+                nova_sala = Sala.objects.create(
+                    jogador1=request.user,
+                    jogador2=bot,
+                    status='em_andamento',
+                    escolha_j2=random.choice(['pedra', 'papel', 'tesoura'])
+                )
+                return redirect('entrar_sala', sala_id=nova_sala.id)
+            else:
+                # Modo multiplayer normal (reutiliza a sala existente)
+                sala.escolha_j1 = None
+                sala.escolha_j2 = None
+                sala.resultado = None
+                sala.status = 'em_andamento'
+                sala.save()
+                
     return redirect('entrar_sala', sala_id=sala.id)
 
 @login_required

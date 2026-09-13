@@ -1,5 +1,6 @@
 from django.urls import path
 from django.contrib.auth.views import LogoutView
+from django.contrib.auth import views as auth_views
 from . import views
 
 urlpatterns = [
@@ -14,4 +15,8 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
     path('sala/<int:sala_id>/api/', views.status_sala_api, name='status_sala_api'),
     path('criar-sala-computador/', views.criar_sala_computador, name='criar_sala_computador'),
+    path('esqueci-senha/', auth_views.PasswordResetView.as_view(template_name='jogo/password_reset.html'), name='password_reset'),
+    path('esqueci-senha/enviado/', auth_views.PasswordResetDoneView.as_view(template_name='jogo/password_reset_done.html'), name='password_reset_done'),
+    path('esqueci-senha/redefinir/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='jogo/password_reset_confirm.html'), name='password_reset_confirm'),
+    path('esqueci-senha/concluido/', auth_views.PasswordResetCompleteView.as_view(template_name='jogo/password_reset_complete.html'), name='password_reset_complete'),
 ]

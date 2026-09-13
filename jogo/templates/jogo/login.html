@@ -11,14 +11,33 @@
 
     <!-- FORMULÁRIO DE LOGIN -->
     <div style="max-width: 400px; margin: 0 auto; background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+        {% if form.errors %}
+            <div style="background: #f8d7da; color: #721c24; padding: 10px; border: 1px solid #f5c6cb; border-radius: 5px; margin-bottom: 15px; font-size: 14px; text-align: center;">
+                Usuário ou senha incorretos. Tente novamente!
+            </div>
+        {% endif %}
+        
         <form method="POST">
             {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" style="width:100%; padding:10px; background:#007bff; color:white; border:none; border-radius:5px; cursor: pointer; font-size: 16px;">
+            <!-- TRADUÇÃO MANUAL DOS CAMPOS -->
+            <p>
+                <label for="id_username">Usuário:</label><br>
+                <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="150" required id="id_username" style="width: 100%; padding: 8px; box-sizing: border-box; margin-top: 5px;">
+            </p>
+            <p>
+                <label for="id_password">Senha:</label><br>
+                <input type="password" name="password" autocomplete="current-password" required id="id_password" style="width: 100%; padding: 8px; box-sizing: border-box; margin-top: 5px;">
+            </p>
+            <button type="submit" style="width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px;">
                 Entrar no Jogo
             </button>
         </form>
-        <p style="text-align:center; margin-top:15px;">Não tem uma conta? <a href="{% url 'registrar' %}">Cadastre-se</a></p>
+        <div style="text-align: center; margin-top: 15px;">
+            <p>Não tem uma conta? <a href="{% url 'registrar' %}">Cadastre-se</a></p>
+            <p style="margin-top: 10px;">
+                <a href="{% url 'password_reset' %}" style="color: #6c757d; font-size: 14px;">Esqueci minha senha</a>
+            </p>
+        </div>
     </div>
 
     <hr style="margin: 30px 0;">
