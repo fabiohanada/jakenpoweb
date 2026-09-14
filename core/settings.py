@@ -141,7 +141,7 @@ MAILERS = {
             "port": 587,
             "use_tls": True,
             "username": "fabiohanada23@gmail.com",
-            "password": "yjayehmdkykgpzrf",
+            "password": "ssvysjkbuyxceqeg",
         }
     }
 }
