@@ -140,8 +140,8 @@ MAILERS = {
             "host": "smtp.gmail.com",
             "port": 587,
             "use_tls": True,
-            "username": "fabiohanada23@gmail.com",
-            "password": "ssvysjkbuyxceqeg",
+            "username": os.environ.get("EMAIL_HOST_USER"),
+            "password": os.environ.get("EMAIL_HOST_PASSWORD"),
         }
     }
 }

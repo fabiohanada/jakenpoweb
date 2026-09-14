@@ -1,0 +1,17 @@
+# Configurações do Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Banco de dados local (se usar SQLite para testes locais)
+db.sqlite3
+
+# Ficheiros de ambiente e credenciais
+.env
+venv/
+env/
+*.log
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
