@@ -132,21 +132,15 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Configuração Correta do Gmail SMTP no Django Atualizado
-MAILERS = {
-    "default": {
-        "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
-        "OPTIONS": {
-            "host": "smtp.gmail.com",
-            "port": 587,
-            "use_tls": True,
-            "username": os.environ.get("EMAIL_HOST_USER"),
-            "password": os.environ.get("EMAIL_HOST_PASSWORD"),
-        }
-    }
-}
+# Configuração Padrão do Gmail SMTP no Django
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
-DEFAULT_FROM_EMAIL = 'fabiohanada23@gmail.com'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Desativa as regras rígidas de complexidade de senha do Django
 AUTH_PASSWORD_VALIDATORS = []
