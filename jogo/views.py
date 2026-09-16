@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -8,6 +8,7 @@ from .models import Sala
 from .forms import RegistroForm
 from django.http import JsonResponse
 import random
+from django.contrib import messages
 
 @login_required(login_url='/login/')
 def home(request):
@@ -238,3 +239,23 @@ def criar_sala_computador(request):
         
         return redirect('entrar_sala', sala_id=sala.id)
     return redirect('home')
+
+def redefinir_senha_direta(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        nova_senha = request.POST.get('nova_senha')
+
+        # Procura se existe um usuário com este exato username E email
+        user = User.objects.filter(username=username, email=email).first()
+
+        if user:
+            # Criptografa e salva a nova senha
+            user.set_password(nova_senha)
+            user.save()
+            messages.success(request, 'Senha alterada com sucesso! Faça login.')
+            return redirect('login')
+        else:
+            messages.error(request, 'Usuário ou e-mail incorretos. Verifique os dados.')
+
+    return render(request, 'jogo/redefinir_senha.html')

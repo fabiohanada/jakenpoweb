@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Redefinir Senha - Jokenpô</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+
+    <div style="background: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); width: 350px;">
+        <h2 style="text-align: center; color: #333;">Redefinir Senha</h2>
+
+        <!-- Exibe mensagens de erro ou sucesso -->
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 10px; margin-bottom: 15px; border-radius: 4px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <label for="username" style="font-weight: bold; color: #555;">Usuário:</label><br>
+            <input type="text" id="username" name="username" required style="width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;"><br>
+
+            <label for="email" style="font-weight: bold; color: #555;">E-mail Cadastrado:</label><br>
+            <input type="email" id="email" name="email" required style="width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;"><br>
+
+            <label for="nova_senha" style="font-weight: bold; color: #555;">Nova Senha:</label><br>
+            <input type="password" id="nova_senha" name="nova_senha" required style="width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px;"><br>
+
+            <button type="submit" style="width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">Alterar Senha</button>
+        </form>
+
+        <div style="text-align: center; margin-top: 15px;">
+            <a href="{% url 'login' %}" style="color: #007bff; text-decoration: none; font-size: 14px;">Voltar para o Login</a>
+        </div>
+    </div>
+
+</body>
+</html>
